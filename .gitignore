@@ -1,3 +1,4 @@
+*.swp
 *.pyc
 *.pyo
 *~
@@ -5,3 +6,4 @@ pyshtables.py
 /doc/manual/html/
 /build/
 /bin/bitbakec
+.*.sw?
