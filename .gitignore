@@ -7,3 +7,6 @@ pyshtables.py
 /build/
 /bin/bitbakec
 .*.sw?
+documentation/user-manual/user-manual.html
+documentation/user-manual/user-manual.pdf
+documentation/user-manual/user-manual.tgz
