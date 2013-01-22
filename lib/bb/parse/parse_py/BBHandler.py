@@ -84,7 +84,7 @@ def inherit(files, fn, lineno, d):
         if not file in __inherit_cache:
             logger.log(logging.DEBUG -1, "BB %s:%d: inheriting %s", fn, lineno, file)
             __inherit_cache.append( file )
-            data.setVar('__inherit_cache', __inherit_cache, d)
+            d.setVar('__inherit_cache', __inherit_cache)
             include(fn, file, lineno, d, "inherit")
             __inherit_cache = d.getVar('__inherit_cache') or []
 
@@ -134,7 +134,7 @@ def handle(fn, d, include):
         __inherit_cache = d.getVar('__inherit_cache') or []
         if not fn in __inherit_cache:
             __inherit_cache.append(fn)
-            data.setVar('__inherit_cache', __inherit_cache, d)
+            d.setVar('__inherit_cache', __inherit_cache)
 
     if include != 0:
         oldfile = d.getVar('FILE')
@@ -151,7 +151,7 @@ def handle(fn, d, include):
 
     # DONE WITH PARSING... time to evaluate
     if ext != ".bbclass":
-        data.setVar('FILE', abs_fn, d)
+        d.setVar('FILE', abs_fn)
 
     try:
         statements.eval(d)
@@ -200,7 +200,10 @@ def feeder(lineno, s, fn, root, statements):
 
     if s and s[0] == '#':
         if len(__residue__) != 0 and __residue__[0][0] != "#":
-            bb.error("There is a comment on line %s of file %s (%s) which is in the middle of a multiline expression.\nBitbake used to ignore these but no longer does so, please fix your metadata as errors are likely as a result of this change." % (lineno, fn, s))
+            bb.fatal("There is a comment on line %s of file %s (%s) which is in the middle of a multiline expression.\nBitbake used to ignore these but no longer does so, please fix your metadata as errors are likely as a result of this change." % (lineno, fn, s))
+
+    if len(__residue__) != 0 and __residue__[0][0] == "#" and (not s or s[0] != "#"):
+        bb.fatal("There is a confusing multiline, partially commented expression on line %s of file %s (%s).\nPlease clarify whether this is all a comment or should be parsed." % (lineno, fn, s))
 
     if s and s[-1] == '\\':
         __residue__.append(s[:-1])
