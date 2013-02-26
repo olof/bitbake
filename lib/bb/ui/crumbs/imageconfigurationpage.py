@@ -55,12 +55,6 @@ class ImageConfigurationPage (HobPage):
         self.toolbar.set_orientation(gtk.ORIENTATION_HORIZONTAL)
         self.toolbar.set_style(gtk.TOOLBAR_BOTH)
 
-        template_button = self.append_toolbar_button(self.toolbar,
-            "Templates",
-            hic.ICON_TEMPLATES_DISPLAY_FILE,
-            hic.ICON_TEMPLATES_HOVER_FILE,
-            "Load a previously saved template",
-            self.template_button_clicked_cb)
         my_images_button = self.append_toolbar_button(self.toolbar,
             "Images",
             hic.ICON_IMAGES_DISPLAY_FILE,
@@ -172,6 +166,11 @@ class ImageConfigurationPage (HobPage):
         build_stop_tab.attach(view_warnings_button, 15, 19, 1, 9)
 
         return warnings_bar
+
+    def disable_warnings_bar(self):
+        if self.builder.parsing_warnings:
+            self.warnings_bar.hide_all()
+            self.builder.parsing_warnings = []
 
     def create_config_machine(self):
         self.machine_title = gtk.Label()
@@ -319,6 +318,7 @@ class ImageConfigurationPage (HobPage):
         self.builder.populate_recipe_package_info_async()
 
     def update_machine_combo(self):
+        self.disable_warnings_bar()
         all_machines = [self.__dummy_machine__] + self.builder.parameters.all_machines
 
         model = self.machine_combo.get_model()
@@ -328,6 +328,7 @@ class ImageConfigurationPage (HobPage):
         self.machine_combo.set_active(0)
 
     def switch_machine_combo(self):
+        self.disable_warnings_bar()
         self.machine_combo_changed_by_manual = False
         model = self.machine_combo.get_model()
         active = 0
@@ -486,13 +487,6 @@ class ImageConfigurationPage (HobPage):
     def edit_image_button_clicked_cb(self, button):
         self.builder.configuration.initial_selected_image = self.builder.configuration.selected_image
         self.builder.show_recipes()
-
-    def template_button_clicked_cb(self, button):
-        response, path = self.builder.show_load_template_dialog()
-        if not response:
-            return
-        if path:
-            self.builder.load_template(path)
 
     def my_images_button_clicked_cb(self, button):
         self.builder.show_load_my_images_dialog()
