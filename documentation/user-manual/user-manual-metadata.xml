@@ -260,7 +260,7 @@
 	</para>
 </section>
 <section>
-	<title>Python variable expansion</title>
+	<title>Inline Python variable expansion</title>
 	<para>
 		<screen>
 			<varname>DATE</varname> =
@@ -300,6 +300,11 @@
 	<para>
 		<emphasis>NOTE:</emphasis> 
 		This is only supported in .bb and .bbclass files.
+	</para>
+	<para>
+		<emphasis>NOTE:</emphasis>
+		Python functions are in the global namespace so should use
+		unique names.
 	</para>
 	<para>
 		<screen>def get_depends(bb, d): if
