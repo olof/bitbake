@@ -211,7 +211,45 @@ class WordLexer:
         else:
             #Keep everything until the separator and defer processing
             return pos, False
-            
+
+    def _find_balanced(self, buf, delim, escapes=True):
+        expr = 1
+        pos = 0
+
+        while expr > 0 and pos < len(buf):
+            # open delimiter
+            if ( delim[0] is not None and
+                 ''.join(buf[pos : pos+len(delim[0])]) == delim[0]):
+                expr += 1
+                pos += len(delim[0]) - 1
+            # closing delimiter
+            elif ''.join(buf[pos : pos+len(delim[1])]) == delim[1]:
+                expr -= 1
+                pos += len(delim[1]) - 1
+            elif escapes and buf[pos] == '\\':
+                pos += 1 # skip next, it's escaped!
+
+            pos += 1
+
+        if expr > 0:
+            return -1 # Could not find matching pair of delims
+        return pos
+
+    def _parse_arithmetic(self, buf, result, eof):
+        if not buf:
+            raise NeedMore()
+
+        pos = self._find_balanced(buf, ("$((", "))"))
+
+        if pos < 0:
+            raise NeedMore()
+
+        result[-1] += ''.join(buf[:pos-2])
+        result.append("))")
+
+        has_eof = len(buf) <= pos
+        return pos, has_eof
+
     def _parse_command(self, buf, result, eof):
         if not buf:
             raise NeedMore()
@@ -229,7 +267,7 @@ class WordLexer:
             return pos+1, True
         else:
             return pos, False
-            
+
     def _parse_parameter(self, buf, result, eof):
         if not buf:
             raise NeedMore()
@@ -289,6 +327,8 @@ class WordLexer:
         sep = result[0]    
         if sep=='$(':
             parsefunc = self._parse_command
+        elif sep=='$((':
+            parsefunc = self._parse_arithmetic
         elif sep=='${':
             parsefunc = self._parse_parameter
         else:
@@ -386,7 +426,7 @@ def make_wordtree(token, here_document=False):
         try:
             result, remaining = WordLexer(heredoc = here_document).add(remaining, True)
         except NeedMore:
-            raise ShellSyntaxError('Invalid token "%s"')
+            raise ShellSyntaxError('Invalid token "%s"' % remaining)
         tree.append(result)
         
                 

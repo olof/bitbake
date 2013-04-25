@@ -110,6 +110,28 @@ ${D}${libdir}/pkgconfig/*.pc
         self.parseExpression("foo=$(echo bar)")
         self.assertExecs(set(["echo"]))
 
+    def test_assign_arith(self):
+        self.parseExpression("python2.$((8-1))")
+        self.assertExecs(set(["python2.$((8-1))"]))
+
+    def test_assign_arith_only(self):
+        self.parseExpression("$((8-1))")
+        self.assertExecs(set(["$((8-1))"]))
+
+    @unittest.skip(
+        "FIXME: multiple shell arith expressions are not supported")
+    def test_assign_arith_dual(self):
+        self.parseExpression("$((1+1))to$((4-1))")
+        self.assertExecs(set(["$((1+1))to$((4-1))"]))
+
+    def test_assign_arith_nested1(self):
+        self.parseExpression("$((1+$((1))))")
+        self.assertExecs(set(["$((1+$((1))))"]))
+
+    def test_assign_arith_nested2(self):
+        self.parseExpression("$(( 1 + $(( 1 )) ))")
+        self.assertExecs(set(["$(( 1 + $(( 1 )) ))"]))
+
     def test_shell_unexpanded(self):
         self.setEmptyVars(["QT_BASE_NAME"])
         self.parseExpression('echo "${QT_BASE_NAME}"')
